@@ -38,10 +38,12 @@ dashboardPage(
                     fluidRow(
                         box(width = 4,
                             title = "Select Variables",
-                        
-                            selectInput("plot_type", "Plot Type",
-                                        c(Scatter = "scatter", Bar = "bar", Downloadable = "download")),
                             
+                            #Select Graph Type
+                            selectInput("plot_type", "Plot Type",
+                                        c(Scatter = "scatter", Bar = "bar")),
+                            
+                            #Scatter
                             conditionalPanel(condition = "input.plot_type == 'scatter'",
                                              selectizeInput("numeric_x", "Select X Variable", 
                                                             selected = "age", 
@@ -52,16 +54,15 @@ dashboardPage(
                                              checkboxInput("damage", "Color by Damage?")
                             ),
                             
+                            #Bar
                             conditionalPanel(condition = "input.plot_type == 'bar'",
                                              selectizeInput("factor", "Select Variables", selected = "secondary_use", 
                                                             choices = names(select_if(earthquake, is.factor))),
                                              checkboxInput("damage2", "Color by Damage?")
-                            ),
-                            
-                            conditionalPanel(condition = "input.plot_type == 'download'",
-                                             downloadButton("download_plot", "Download"))
+                            )
                         ),
                         
+                        #Show Plots
                         box(width = 8,
                             plotlyOutput("interactive_plots")
                         )
@@ -69,7 +70,33 @@ dashboardPage(
             ), 
 
             #Clustering/PCA Tab
-            tabItem(tabName = "Clustering_PCA"),
+            tabItem(tabName = "Clustering_PCA",
+                    h2("Principal Component Analysis"),
+                    fluidRow(
+                        #Select Variables
+                        box(width = 4,
+                        varSelectInput("pca_variables", "Select Variables", earthquake_numeric, multiple = TRUE),
+                        downloadButton("download_plot", "Download Plot")
+                        ),
+                        
+                        #Show PCA Plot
+                        box(width = 8,
+                        title = "PCA Plot",
+                        plotOutput("PCA_Plot")),
+                        
+                        #Show PCA*
+                        box(width = 12,
+                        title = "Individual Components",
+                        verbatimTextOutput("PCA")
+                        ),
+                        
+                        #PCA Summary
+                        box(width = 12, 
+                        title = "PCA Summary",
+                        verbatimTextOutput("PCA_Summary")
+                        )
+                    )
+                ),
 
             #Modeling Tab
             tabItem(tabName = "Modeling"),

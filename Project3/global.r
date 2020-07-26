@@ -78,3 +78,9 @@ factor_variables <- c("count_floors_pre_eq", "land_surface_condition", "foundati
                       "ground_floor_type", "other_floor_type", "position", "plan_configuration", 
                       "legal_ownership_status", "superstructure", "secondary_use",
                       "damage_grade", "count_families")
+
+#Data with Numeric
+earthquake_numeric <- earthquake_use %>% select(all_of(numeric_variables))
+
+#Data with Factors
+earthquake_factor <- earthquake_use %>% select(all_of(factor_variables))
