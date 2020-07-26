@@ -1,4 +1,6 @@
 library(shinydashboard)
+library(tidyverse)
+library(plotly)
 
 dashboardPage(
     dashboardHeader(title = "ST558 Project 3"),
@@ -19,7 +21,8 @@ dashboardPage(
                     fluidRow(
                         box(width = 6,
                             title = "Data Information",
-                            p("Information about the data goes here.")
+                            p("Information about the data goes here. More information about the data can be found ",
+                              a("here.", href = "https://www.drivendata.org/competitions/57/nepal-earthquake/page/136/"))
                         ),
                         
                         box(width = 6,
@@ -30,7 +33,40 @@ dashboardPage(
             ),
 
             #Data Exploration Tab
-            tabItem(tabName = "Exploration"),
+            tabItem(tabName = "Exploration",
+                    h2("Exploration of the Earthquake Data"),
+                    fluidRow(
+                        box(width = 4,
+                            title = "Select Variables",
+                        
+                            selectInput("plot_type", "Plot Type",
+                                        c(Scatter = "scatter", Bar = "bar", Downloadable = "download")),
+                            
+                            conditionalPanel(condition = "input.plot_type == 'scatter'",
+                                             selectizeInput("numeric_x", "Select X Variable", 
+                                                            selected = "age", 
+                                                            choices = names(select_if(earthquake, is.numeric))),
+                                             selectizeInput("numeric_y", "Select Y Variable", 
+                                                            selected = "area_percentage", 
+                                                            choices = names(select_if(earthquake, is.numeric))),
+                                             checkboxInput("damage", "Color by Damage?")
+                            ),
+                            
+                            conditionalPanel(condition = "input.plot_type == 'bar'",
+                                             selectizeInput("factor", "Select Variables", selected = "secondary_use", 
+                                                            choices = names(select_if(earthquake, is.factor))),
+                                             checkboxInput("damage2", "Color by Damage?")
+                            ),
+                            
+                            conditionalPanel(condition = "input.plot_type == 'download'",
+                                             downloadButton("download_plot", "Download"))
+                        ),
+                        
+                        box(width = 8,
+                            plotlyOutput("interactive_plots")
+                        )
+                    )
+            ), 
 
             #Clustering/PCA Tab
             tabItem(tabName = "Clustering_PCA"),
@@ -40,7 +76,9 @@ dashboardPage(
 
             #View Data Tab
             tabItem(tabName = "View_Data",
-                    DT::dataTableOutput("nola_data"))
+                    DT::dataTableOutput("earthquake"),
+                    downloadButton("download_data", "Download")
+            )
         )
     )
 )

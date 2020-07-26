@@ -38,6 +38,12 @@ earthquake_train_values <- earthquake_train_values %>%
 #Merge Data
 earthquake <- merge(earthquake_train_values, earthquake_train_labels, by = "building_id")
 
+#Select Small Portion
+set.seed(321)
+smaller <- sample(1:nrow(earthquake), size = nrow(earthquake)*0.025) 
+earthquake <- earthquake[smaller, ] 
+
+
 #Make Factor
 earthquake$damage_grade <- as.factor(earthquake$damage_grade)
 earthquake$superstructure <- as.factor(earthquake$superstructure)
@@ -50,6 +56,8 @@ earthquake$other_floor_type <- as.factor(earthquake$other_floor_type)
 earthquake$position <- as.factor(earthquake$position)
 earthquake$plan_configuration <- as.factor(earthquake$plan_configuration)
 earthquake$legal_ownership_status <- as.factor(earthquake$legal_ownership_status)
+earthquake$count_families <- as.factor(earthquake$count_families)
+earthquake$count_floors_pre_eq <- as.factor(earthquake$count_floors_pre_eq)
 
 #Split data
 set.seed(321)
@@ -60,13 +68,58 @@ test <- setdiff(1:nrow(earthquake), train)
 earthquake_train <- earthquake[train, ] 
 earthquake_test <- earthquake[test, ]
 
+#### Random Forest ####
+
+#Create Model
 rf_ranger <- ranger(formula = damage_grade ~ ., data = earthquake_train, num.trees = 200, 
                     mtry = ncol(earthquake_train)/3)
 
+#Predict
 rfPred <- predict(rf_ranger, earthquake_test)
 
+#Create Results
 rf_results <- confusionMatrix(data = rfPred$predictions, reference = earthquake_test$damage_grade) 
 rf_results
 
-library(parallel)
+#### PCA ####
+numeric_variables <- c("geo_level_1_id", "geo_level_2_id", "geo_level_3_id",
+                      "age", "area_percentage", "height_percentage")
 
+factor_variables <- c("count_floors_pre_eq", "land_surface_condition", "foundation_type", "roof_type", 
+                      "ground_floor_type", "other_floor_type", "position", "plan_configuration", 
+                      "legal_ownership_status", "superstructure", "secondary_use",
+                      "damage_grade", "count_families")
+
+
+earthquake_numeric <- earthquake %>% select(all_of(numeric_variables))
+
+earthquake_factor <- earthquake %>% select(all_of(factor_variables))
+
+PCs <- prcomp(earthquake_numeric, center = TRUE, scale = TRUE)
+PCs
+
+summary(PCs)
+
+biplot(PCs, xlabs = rep(".", nrow(earthquake)), cex = 1.2)
+
+#### Plots ####
+#Table
+table(earthquake$land_surface_condition, earthquake$foundation_type)
+
+#Bar PLot
+plot.1 <- ggplot(data = earthquake, aes(x = secondary_use))
+plot.1 + geom_bar(aes(fill = damage_grade)) + 
+  scale_x_discrete(guide = guide_axis(n.dodge = 3))
+
+#Scatter
+plot.2 <- ggplot(data = earthquake, aes(x = age, y = geo_level_1_id))
+plot.2 <- plot.2 + geom_point(aes(color = damage_grade)) +
+  geom_smooth() 
+
+ggplotly(plot.2)
+
+#Boxplot
+plot.2 <- ggplot(data = earthquake, aes(x = height_percentage))
+plot.2 + geom_boxplot(aes(color = damage_grade))
+
+names(select_if(earthquake, is.factor))
