@@ -3,6 +3,7 @@
 library(tidyverse)
 library(ranger)
 
+
 #Read Data
 earthquake_train_values <- read_csv("Project3/earthquake_train_values.csv")
 earthquake_train_labels <- read_csv("~/Documents/ST558/ST558_Project3/Project3/earthquake_train_labels.csv")
@@ -71,15 +72,46 @@ earthquake_test <- earthquake[test, ]
 #### Random Forest ####
 
 #Create Model
-rf_ranger <- ranger(formula = damage_grade ~ ., data = earthquake_train, num.trees = 200, 
-                    mtry = ncol(earthquake_train)/3)
+earthquake_train2 <- earthquake_train %>% select(age, superstructure, damage_grade)
+
+rf_ranger <- ranger(formula = damage_grade ~ ., data = earthquake_train2, num.trees = 200, 
+                    mtry = ncol(earthquake_train2)/3)
 
 #Predict
-rfPred <- predict(rf_ranger, earthquake_test)
+test2 <- data.frame("geo_level_1_id" = 14, 
+                    "geo_level_2_id" = 707, 
+                    "geo_level_3_id" = 6325, 
+                    "count_floors_pre_eq" = 1, 
+                    "age" = 26, 
+                    "area_percentage" = 8, 
+                    "height_percentage" = 5, 
+                    "land_surface_condition" = "n", 
+                    "foundation_type" = "h", 
+                    "roof_type" = "n", 
+                    "ground_floor_type" = "f", 
+                    "other_floor_type" = "j", 
+                    "position" = "j", 
+                    "plan_configuration" = "a", 
+                    "legal_ownership_status" = "a", 
+                    "count_families" = 0, 
+                    "superstructure" = "Adobe Mud", 
+                    "secondary_use" = "Agriculture"
+                    )
+
+
+rfPred <- predict(rf_ranger, test2)
+
+print(rfPred)
+
+rfPred$predictions
 
 #Create Results
 rf_results <- confusionMatrix(data = rfPred$predictions, reference = earthquake_test$damage_grade) 
 rf_results
+
+min(earthquake_use$geo_level_1_id)
+max(earthquake_use$geo_level_1_id)
+
 
 #### PCA ####
 numeric_variables <- c("geo_level_1_id", "geo_level_2_id", "geo_level_3_id",
@@ -102,6 +134,29 @@ summary(PCs)
 
 biplot(PCs, xlabs = rep(".", nrow(earthquake)), cex = 1.2)
 
+#### KNN ####
+
+earthquake_numeric_train <- earthquake_train %>% select(all_of(numeric_variables), damage_grade)
+
+earthquake_numeric_test <- earthquake_test %>% select(all_of(numeric_variables), damage_grade)
+
+control <- trainControl(method = "repeatedcv", number = 10, repeats = 3)
+
+knn_fit <- train(damage_grade ~ ., data = earthquake_numeric_train, method = "knn",
+                 preProcess = c("center", "scale"), 
+                 tuneGrid = expand.grid(k = c(2:10)))
+
+predictions <- predict(knn_fit, newdata = earthquake_numeric_test)
+
+predictions[1]
+
+results <- confusionMatrix(predictions, earthquake_numeric_test$damage_grade) 
+results
+
+
+
+
+
 #### Plots ####
 #Table
 table(earthquake$land_surface_condition, earthquake$foundation_type)
@@ -123,3 +178,10 @@ plot.2 <- ggplot(data = earthquake, aes(x = height_percentage))
 plot.2 + geom_boxplot(aes(color = damage_grade))
 
 names(select_if(earthquake, is.factor))
+
+mean(earthquake_use$geo_level_1_id)
+
+save <- quantile(earthquake_use$geo_level_1_id, .25)
+save
+data.frame("value" = save, "test" = 1, "min" = min(earthquake_use$geo_level_1_id), 
+           "mean" = mean(earthquake_use$geo_level_1_id))
