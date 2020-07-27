@@ -6,5 +6,6 @@ Michael Evans
 # Code to Enter to Run App
 
 ``` r
+library(shiny)
 runGitHub("ST558_Project3", subdir = "Project3", username = "mrevans7")
 ```

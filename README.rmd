@@ -8,5 +8,6 @@ output:
 
 # Code to Enter to Run App
 ```{r run_app, eval = F}
+library(shiny)
 runGitHub("ST558_Project3", subdir = "Project3", username = "mrevans7")
 ```
