@@ -157,18 +157,19 @@ dashboardPage(
                         #Show PCA Plot
                         box(width = 8, status = "primary", solidHeader = TRUE,
                         title = "PCA Plot",
-                        plotOutput("PCA_Plot")),
+                        plotOutput("PCA_Plot") %>% withSpinner(color="#008ec1")
+                        ),
                         
                         #Show PCA
                         box(width = 12, status = "primary", solidHeader = TRUE,
                         title = "Individual Components",
-                        verbatimTextOutput("PCA")
+                        verbatimTextOutput("PCA") %>% withSpinner(color="#008ec1")
                         ),
                         
                         #PCA Summary
                         box(width = 12, status = "primary", solidHeader = TRUE,
                         title = "PCA Summary",
-                        verbatimTextOutput("PCA_Summary")
+                        verbatimTextOutput("PCA_Summary") %>% withSpinner(color="#008ec1")
                         )
                     )
                 ),
