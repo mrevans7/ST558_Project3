@@ -1,0 +1,12 @@
+---
+title: "ST558 Project 3"
+author: Michael Evans
+date: 7/27/2020
+output: 
+  rmarkdown::github_document
+---
+
+# Code to Enter to Run App
+```{r run_app, eval = F}
+runGitHub("ST558_Project3", subdir = "Project3", username = "mrevans7")
+```
