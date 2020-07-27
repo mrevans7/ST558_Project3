@@ -338,6 +338,13 @@ dashboardPage(
 
             #View Data Tab
             tabItem(tabName = "View_Data",
+                    box(width = 4,
+                        status = "primary", solidHeader = TRUE,
+                        title = "Select Variables",
+                        varSelectInput("select_variables", "Select Variables", earthquake_use, 
+                                       multiple = TRUE,
+                                       selected = "building_id")
+                    ),
                     DT::dataTableOutput("earthquake"),
                     downloadButton("download_data", "Download")
             )

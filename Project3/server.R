@@ -209,7 +209,7 @@ shinyServer(function(input, output, session) {
     
     #Create Data for Viewing in App
     output$earthquake <- DT::renderDataTable({
-        datatable(earthquake_display <- earthquake(),
+        datatable(earthquake_display <- earthquake() %>% select(!!!input$select_variables),
                   options = list(scrollX = TRUE)
         )
     })
@@ -218,7 +218,7 @@ shinyServer(function(input, output, session) {
     output$download_data <- downloadHandler(
         filename = "earthquake.csv",
         content = function(file) {
-            write.csv(earthquake(), file, row.names = FALSE)
+            write.csv(earthquake() %>% select(!!!input$select_variables), file, row.names = FALSE)
         }
     )
 })
